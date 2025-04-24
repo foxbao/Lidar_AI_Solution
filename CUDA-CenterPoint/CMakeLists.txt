@@ -1,68 +1,62 @@
 # SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: MIT
-#
-# Permission is hereby granted, free of charge, to any person obtaining a
-# copy of this software and associated documentation files (the "Software"),
-# to deal in the Software without restriction, including without limitation
-# the rights to use, copy, modify, merge, publish, distribute, sublicense,
-# and/or sell copies of the Software, and to permit persons to whom the
-# Software is furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-# DEALINGS IN THE SOFTWARE.
 
-cmake_minimum_required(VERSION 2.8.7)
+cmake_minimum_required(VERSION 3.12)  # 建议升级到 CMake 3.12+
 project(centerpoint)
+
+# 设置架构和路径（覆盖原有硬编码路径）
 set(arch ${CMAKE_HOST_SYSTEM_PROCESSOR})
-
-if(${arch}     STREQUAL  "aarch64")
-  # set(TENSORRT_ROOT         /root/.kiwi/lib/TensorRT-8.5.3.1-cuda11x)
-  # set(CUDA_TOOLKIT_ROOT_DIR /root/.kiwi/lib/cuda-11.8)
-elseif(${arch} STREQUAL "x86_64")
-  set(TENSORRT_ROOT         /root/.kiwi/lib/TensorRT-8.5.3.1-cuda11x)
-  set(CUDA_TOOLKIT_ROOT_DIR /root/.kiwi/lib/cuda-11.8)
-endif()
-
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -Wextra -Wall -Wno-deprecated-declarations -O3")
-# set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -gencode arch=compute_87,code=compute_87)
-set(TENSORRT_INCLUDE ${TENSORRT_ROOT}/include)
-set(TENSORRT_LIB     ${TENSORRT_ROOT}/lib)
 
+# 1. 显式指定 TensorRT 和 CUDA 路径（与你的环境变量一致）
+set(TENSORRT_ROOT "/home/baojiali/Downloads/TensorRT-8.6.1.6")  # 直接匹配你的安装路径
+set(TENSORRT_INCLUDE "$ENV{TensorRT_Inc}")
+set(TENSORRT_LIB "$ENV{TensorRT_Lib}")
+set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda-11.8")  # 匹配你的 CUDA 路径
+
+# 2. 查找 CUDA 和 TensorRT 库
 find_package(CUDA REQUIRED)
-if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-  message("Using Debug Mode")
-  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -g -G --ptxas-options=-v)
-endif()
+message(STATUS "CUDA Found: ${CUDA_VERSION}")
 
+# 3. 包含目录
 include_directories(
   ${CUDA_INCLUDE_DIRS}
   ${TENSORRT_INCLUDE}
-  3rdparty/libspconv/include
-  include
+  "3rdparty/libspconv/include"
+  "include"
 )
 
+# 4. 链接目录
 link_directories(
   ${TENSORRT_LIB}
-  3rdparty/libspconv/lib/${arch}
+  ${CUDA_LIBRARY_DIRS}
+  "3rdparty/libspconv/lib/${arch}"
 )
 
+# 5. 添加可执行文件
 file(GLOB_RECURSE SOURCE_FILES 
-  src/*.cu 
-  src/*.cpp
+  "src/*.cu"
+  "src/*.cpp"
 )
 
-cuda_add_executable(${PROJECT_NAME} main.cpp ${SOURCE_FILES})
-
-target_link_LIBraries(${PROJECT_NAME}
-    libnvinfer.so
-    libspconv.so
+cuda_add_executable(${PROJECT_NAME} 
+  "main.cpp" 
+  ${SOURCE_FILES}
 )
+
+# 6. 链接库（使用绝对路径避免歧义）
+target_link_libraries(${PROJECT_NAME}
+  "${TENSORRT_LIB}/libnvinfer.so"
+  "${TENSORRT_LIB}/libnvinfer_plugin.so"  # 通常需要同时链接
+  "libspconv.so"
+  ${CUDA_LIBRARIES}
+  stdc++fs  # 可能需要 C++17 文件系统库
+)
+
+# 7. 打印调试信息
+message(STATUS "======================================")
+message(STATUS "TensorRT Include: ${TENSORRT_INCLUDE}")
+message(STATUS "TensorRT Library: ${TENSORRT_LIB}")
+message(STATUS "CUDA Libraries: ${CUDA_LIBRARIES}")
+message(STATUS "======================================")
