@@ -6,7 +6,8 @@ project(centerpoint)
 
 # 设置架构和路径（覆盖原有硬编码路径）
 set(arch ${CMAKE_HOST_SYSTEM_PROCESSOR})
-set(CMAKE_BUILD_TYPE "Release")
+# set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -Wextra -Wall -Wno-deprecated-declarations -O3")
 
 # 1. 显式指定 TensorRT 和 CUDA 路径（与你的环境变量一致）

@@ -129,8 +129,8 @@ void SaveBoxPred(std::vector<Bndbox> boxes, std::string file_name)
           ofs << box.w << " ";
           ofs << box.l << " ";
           ofs << box.h << " ";
-          ofs << box.vx << " ";
-          ofs << box.vy << " ";
+        //   ofs << box.vx << " ";
+        //   ofs << box.vy << " ";
           ofs << box.rt << " ";
           ofs << box.id << " ";
           ofs << box.score << " ";

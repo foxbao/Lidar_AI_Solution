@@ -52,7 +52,10 @@ CenterPoint::CenterPoint(std::string modelFile, bool verbose): verbose_(verbose)
     pre_.reset(new PreProcessCuda());
     post_.reset(new PostProcessCuda());
 
-    scn_engine_ = spconv::load_engine_from_onnx("../model/centerpoint.scn.onnx");
+
+    // scn_engine_ = spconv::load_engine_from_onnx("../model/centerpoint.scn.onnx");
+    scn_engine_ = spconv::load_engine_from_onnx("../model/centerpoint_pre.scn.onnx");
+
 
     checkCudaErrors(cudaMallocHost((void **)&h_detections_num_, sizeof(unsigned int)));
     checkCudaErrors(cudaMemset(h_detections_num_, 0, sizeof(unsigned int)));

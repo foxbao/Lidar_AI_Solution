@@ -26,6 +26,15 @@ import glob
 from pathlib import Path
 
 
+def height_compression_hook(module, input, output):
+    module.output_batch_dict = {k: v.clone().detach() if isinstance(v, torch.Tensor) else v for k, v in output.items()}
+    # module.saved_input = input[0].clone().detach()
+    # module.saved_output=output.clone().detach()
+    # module.saved_output = output.clone().detach()
+    
+def center_head_hook(module, input, output):
+    module.output_batch_dict = output
+
 def read_pcd(filepath):
     pcd = o3d.io.read_point_cloud(filepath)
     pcd_points = np.asarray(pcd.points)  
@@ -94,7 +103,6 @@ def arg_parser():
     parser.add_argument('--ext', type=str, default='.bin', help='specify the extension of your point cloud data file')
     parser.add_argument('--extra_tag', type=str, default='default', help='extra tag for this experiment')
     parser.add_argument('--half', type=bool, default=False, help='True:export FP16 onnx model, else, FP32 model')
-    parser.add_argument('--scn_onnx_path',type=str, default='centerpoint_pre.scn.onnx', help='specify the onnx model path')
     parser.add_argument('--neck_head_sim_path',default='pcdet_neck_head_sim.onnx', help='specify the onnx model path')
     args = parser.parse_args()
 
@@ -103,17 +111,45 @@ def arg_parser():
     cfg.EXP_GROUP_PATH = '/'.join(args.cfg_file.split('/')[1:-1]) 
     return args, cfg
 
+
+def prepare_batch_dict_from_ort_outputs(ort_outputs, output_names, batch_size=1, cls_preds_normalized=False,device='cuda:0'):
+    """
+    将ONNX Runtime的输出转换为可被post_processing处理的batch_dict
+    
+    Args:
+        ort_outputs: ort_session.run的输出结果列表
+        output_names: ONNX模型输出名称列表，顺序与ort_outputs对应
+        batch_size: 批处理大小，默认为1
+        cls_preds_normalized: 分类预测是否已经归一化，默认为False
+    
+    Returns:
+        batch_dict: 符合post_processing输入要求的字典
+    """
+    batch_dict = {}
+    
+    # 将ORT输出映射到batch_dict
+    for i, name in enumerate(output_names):
+        if i < len(ort_outputs):
+            # 将NumPy数组转换为PyTorch张量
+            batch_dict[name] = torch.from_numpy(ort_outputs[i]).to(device)
+    
+    # 添加post_processing所需的必要字段
+    batch_dict['batch_size'] = batch_size
+    batch_dict['cls_preds_normalized'] = cls_preds_normalized
+    return batch_dict
+
+
 def main():
     args, cfg = arg_parser()
     logger = common_utils.create_logger()
     logger.info(' *************** CenterPoint Export NeckHead Onnx Model *****************')
     
-    if args.data_path.endswith(".bin") or args.data_path.endswith(".pcd") or args.data_path.endswith(".npy"):
-        # 数据加载
-        demo_dataset = MyKittiDataset(
-            dataset_cfg=cfg.DATA_CONFIG, class_names=cfg.CLASS_NAMES, training=False,
-            root_path=Path(args.data_path), ext=args.ext, logger=logger
-        )
+    # if args.data_path.endswith(".bin") or args.data_path.endswith(".pcd") or args.data_path.endswith(".npy"):
+    #     # 数据加载
+    #     demo_dataset = MyKittiDataset(
+    #         dataset_cfg=cfg.DATA_CONFIG, class_names=cfg.CLASS_NAMES, training=False,
+    #         root_path=Path(args.data_path), ext=args.ext, logger=logger
+    #     )
         
     from pcdet.datasets import build_dataloader
     test_dataset, test_loader, sampler = build_dataloader(
@@ -127,7 +163,7 @@ def main():
     )
     # 模型加载
     # neck + head = mep_to_bev + backbone2d + ceneterhead
-    model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=demo_dataset)
+    model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=test_dataset)
     model.load_params_from_file(filename=args.ckpt, logger=logger, to_cpu=True)
         
     model.cuda()
@@ -145,20 +181,23 @@ def main():
         data_input=real_input
         break
     
-    MeanVFE_part=model.module_list[0]
-    VoxelResBackBone8x_part=model.module_list[1]
-    HeighCompression_part=model.module_list[2]
-    BaseBEVBackbone_part=model.module_list[3]
+    # 将模型的HeightCompression和CenterHead部分提取出来，HeightCompression的输出spatial_features就是CenterHead的输入
+    # 分两路，一个给onnx，一个给pytorch
+    HeightCompression_part=model.module_list[2]
     CenterHead_part=model.module_list[4]
     
-
+    hook_handle_height_compression = HeightCompression_part.register_forward_hook(height_compression_hook)
     np.set_printoptions(threshold=np.inf)
+    
+    _ = model(data_input)
     
     print("neck_head!")
     onnx_neck_head_sim=onnx.load(args.neck_head_sim_path)
     ort_session = ort.InferenceSession(
         os.path.join(args.neck_head_sim_path)
     )
+    
+    
     # 检查输入输出是否确实支持动态维度
     for input_tensor in ort_session.get_inputs():
         print(f"Input: {input_tensor.name}, Shape: {input_tensor.shape},Type: {input_tensor.type}")
@@ -166,11 +205,51 @@ def main():
 
     for output_tensor in ort_session.get_outputs():
         print(f"Output: {output_tensor.name}, Shape: {output_tensor.shape},Type: {output_tensor.type}")
+        
+    #Heigh
+    spatial_features=HeightCompression_part.output_batch_dict['spatial_features']
+    
+    # pytorch的CenterHead的输出
+    pred_dicts=CenterHead_part.forward_ret_dict['pred_dicts'][0]
+    onnx_input = dict()
+    # 按照onnx的要求，输入的维度应该是固定的
     
     
+    onnx_input['input']=spatial_features.cpu().numpy().astype(np.float32)
+    onnx_output = ort_session.run(None, onnx_input)
+    output_names = [
+        "center",
+        "center_z",
+        "dim",
+        "rot",
+        "hm",
+    ]
+    # 准备batch_dict
+    onnx_output_batch = prepare_batch_dict_from_ort_outputs(
+        ort_outputs=onnx_output,
+        output_names=output_names,
+        batch_size=1,  # 假设batch_size为1
+        cls_preds_normalized=False  # 假设分类预测未归一化
+    )
+    
+    torch_numpy=[]
+    for tensor in pred_dicts.values():
+        if torch.is_tensor(tensor):
+            torch_numpy.append(tensor.detach().cpu().numpy())
+        else:
+            torch_numpy.append(tensor)
+    max_error=float('-inf')
+    for torch_numpy, onnx_output in zip(torch_numpy, onnx_output):
+        max_error = max(np.abs(torch_numpy - onnx_output).max(),max_error)
+        
+    print(f"最大绝对误差: {max_error:.5e}")  # 科学计数法显示
     
     # test neck_head.onnx
-    pass
+    hook_handle_height_compression.remove()
+    # hook_handle_center_head.remove()
+    
+    aaaa=1
+    # hook_handle2.remove()
 
 if __name__ == "__main__":
     # args = arg_parser()
