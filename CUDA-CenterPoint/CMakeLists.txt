@@ -12,8 +12,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -Wextra -Wall -Wno-deprecated-declaratio
 
 # 1. 显式指定 TensorRT 和 CUDA 路径（与你的环境变量一致）
 set(TENSORRT_ROOT "/home/baojiali/Downloads/TensorRT-8.6.1.6")  # 直接匹配你的安装路径
-set(TENSORRT_INCLUDE "$ENV{TensorRT_Inc}")
-set(TENSORRT_LIB "$ENV{TensorRT_Lib}")
+set(TENSORRT_INCLUDE ${TENSORRT_ROOT}/include)
+set(TENSORRT_LIB ${TENSORRT_ROOT}/lib)
 set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda-11.8")  # 匹配你的 CUDA 路径
 
 # 2. 查找 CUDA 和 TensorRT 库

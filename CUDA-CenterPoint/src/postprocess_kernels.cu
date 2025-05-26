@@ -97,15 +97,18 @@ __global__ void predictKernel(
         dim_.y = exp(__half2float(dim[n * C_dim * HW + 1 * HW + h * W + w]));
         dim_.z = exp(__half2float(dim[n * C_dim * HW + 2 * HW + h * W + w]));
 
-        auto vx = __half2float(vel[n * C_vel * HW + 0 * HW + h * W + w]);
-        auto vy = __half2float(vel[n * C_vel * HW + 1 * HW + h * W + w]);
-        auto rs = atan2(__half2float(rot[n * C_rot * HW + h * W + w]), __half2float(rot[n * C_rot * HW + HW + h * W + w]));
+        // auto vx = __half2float(vel[n * C_vel * HW + 0 * HW + h * W + w]);
+        // auto vy = __half2float(vel[n * C_vel * HW + 1 * HW + h * W + w]);
+        // auto rs = atan2(__half2float(rot[n * C_rot * HW + h * W + w]), __half2float(rot[n * C_rot * HW + HW + h * W + w]));
+
+        auto rs = atan2(__half2float(rot[n * C_rot * HW + HW + h * W + w]), __half2float(rot[n * C_rot * HW + 0*HW + h * W + w]));
 
         *(float3 *)(&detections[n * MAX_DET_NUM * DET_CHANNEL + DET_CHANNEL * curDet + 0]) = make_float3(xs, ys, zs);
         *(float3 *)(&detections[n * MAX_DET_NUM * DET_CHANNEL + DET_CHANNEL * curDet + 3]) = dim_;
-        detections[n * MAX_DET_NUM * DET_CHANNEL + DET_CHANNEL * curDet + 6] = vx;
-        detections[n * MAX_DET_NUM * DET_CHANNEL + DET_CHANNEL * curDet + 7] = vy;
-        *(float3 *)(&detections[n * MAX_DET_NUM * DET_CHANNEL + DET_CHANNEL * curDet + 8]) = make_float3(rs, label, score);
+        // detections[n * MAX_DET_NUM * DET_CHANNEL + DET_CHANNEL * curDet + 6] = vx;
+        // detections[n * MAX_DET_NUM * DET_CHANNEL + DET_CHANNEL * curDet + 7] = vy;
+        // *(float3 *)(&detections[n * MAX_DET_NUM * DET_CHANNEL + DET_CHANNEL * curDet + 8]) = make_float3(rs, label, score);
+        *(float3 *)(&detections[n * MAX_DET_NUM * DET_CHANNEL + DET_CHANNEL * curDet + 6]) = make_float3(rs, label, score);
     }
 }
 
