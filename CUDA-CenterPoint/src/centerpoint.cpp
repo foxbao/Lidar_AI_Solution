@@ -167,7 +167,17 @@ int CenterPoint::doinfer(void* points, unsigned int point_num, cudaStream_t stre
     //                                             d_reg_[3], d_height_[3], d_dim_[3], d_rot_[3], d_vel_[3], d_hm_[3],
     //                                             d_reg_[4], d_height_[4], d_dim_[4], d_rot_[4], d_vel_[4], d_hm_[4],
     //                                             d_reg_[5], d_height_[5], d_dim_[5], d_rot_[5], d_vel_[5], d_hm_[5]}, stream);
-    trt_->forward({result->features_data(), d_reg_[0], d_height_[0], d_dim_[0], d_rot_[0], d_hm_[0]},stream);
+
+    // kl
+    trt_->forward({result->features_data(), d_reg_[0], d_height_[0], d_dim_[0], d_rot_[0],d_hm_[0],
+                                                d_reg_[1], d_height_[1], d_dim_[1], d_rot_[1], d_hm_[1],
+                                                d_reg_[2], d_height_[2], d_dim_[2], d_rot_[2], d_hm_[2],
+                                                d_reg_[3], d_height_[3], d_dim_[3], d_rot_[3], d_hm_[3],
+                                                d_reg_[4], d_height_[4], d_dim_[4], d_rot_[4], d_hm_[4],
+                                                d_reg_[5], d_height_[5], d_dim_[5], d_rot_[5], d_hm_[5]}, stream);
+    // kitti
+    // trt_->forward({result->features_data(), d_reg_[0], d_height_[0], d_dim_[0], d_rot_[0], d_hm_[0]},stream);
+
     timing_trt_.push_back(timer_.stop("RPN + Head", verbose_));
     nms_pred_.clear();
 

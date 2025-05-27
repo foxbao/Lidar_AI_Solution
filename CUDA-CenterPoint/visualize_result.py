@@ -126,8 +126,10 @@ def visualize_point_cloud_with_boxes(bin_path, txt_path):
     vis.destroy_window()
 
 if __name__ == "__main__":
-    bin_file = "data/test_kitti/000008.bin"
-    txt_file = "data/prediction/000008.txt"
+    # bin_file = "data/test_kitti/000008.bin"
+    # txt_file = "data/prediction/000008.txt"
+    bin_file = "data/test_kl/1733211963.001387.bin"
+    txt_file = "data/prediction/1733211963.001387.txt"
     # bin_file = "data/1733211963.001387.bin"
     # txt_file = "data/1733211963.001387.txt"
     # bin_file = "data/000000.bin"
