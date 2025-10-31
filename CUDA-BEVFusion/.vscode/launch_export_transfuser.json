@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug export-transfuser.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/qat/export-transfuser.py",
+            "args": [
+                "--ckpt=model/resnet50int8/bevfusion_ptq.pth"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        }
+    ]
+  }
+  

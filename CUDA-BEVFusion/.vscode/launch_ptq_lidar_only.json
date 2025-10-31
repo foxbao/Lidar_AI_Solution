@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Compare two pth files",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/qat/ptq_lidar_only.py",
+        "console": "integratedTerminal",
+        "args": [
+          "--config=bevfusion/configs/nuscenes/det/transfusion/secfpn/lidar/voxelnet_0p075.yaml",
+          "--ckpt=model/lidar/latest.pth",
+          "--calibrate_batch", "300"
+      ]
+      }
+    ]
+  }
+  

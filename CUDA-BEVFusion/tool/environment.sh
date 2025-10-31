@@ -22,16 +22,27 @@
 
 # export CUDA_VISIBLE_DEVICES=2
 
-export TensorRT_Lib=/path/to/TensorRT/lib
-export TensorRT_Inc=/path/to/TensorRT/include
-export TensorRT_Bin=/usr/src/tensorrt/bin
+# export TensorRT_Lib=/path/to/TensorRT/lib
+# export TensorRT_Inc=/path/to/TensorRT/include
+# export TensorRT_Bin=/usr/src/tensorrt/bin
 
-export CUDA_Lib=/usr/local/cuda/lib64
-export CUDA_Inc=/usr/local/cuda/include
-export CUDA_Bin=/usr/local/cuda/bin
-export CUDA_HOME=/usr/local/cuda
+# export CUDA_Lib=/usr/local/cuda/lib64
+# export CUDA_Inc=/usr/local/cuda/include
+# export CUDA_Bin=/usr/local/cuda/bin
+# export CUDA_HOME=/usr/local/cuda
 
-export CUDNN_Lib=/path/to/cudnn/lib
+# export CUDNN_Lib=/path/to/cudnn/lib
+
+export TensorRT_Lib=/home/baojiali/Downloads/TensorRT-8.6.1.6/lib
+export TensorRT_Inc=/home/baojiali/Downloads/TensorRT-8.6.1.6/include
+export TensorRT_Bin=/home/baojiali/Downloads/TensorRT-8.6.1.6/bin
+
+export CUDA_Lib=/usr/local/cuda-11.8/targets/x86_64-linux-gnu/lib/
+export CUDA_Inc=/usr/local/cuda-11.8/targets/x86_64-linux-gnu/include/
+export CUDA_Bin=/usr/local/cuda-11.8/bin/
+export CUDA_HOME=/usr/local/cuda-11.8/
+
+export CUDNN_Lib=/lib/x86_64-linux-gnu/
 
 # export TensorRT_Lib=${TENSORRT_LIB}
 # export TensorRT_Inc=${TENSORRT_INCLUDE}
@@ -49,10 +60,15 @@ export CUDNN_Lib=/path/to/cudnn/lib
 export SPCONV_CUDA_VERSION=11.4
 
 # resnet50/resnet50int8/swint
-export DEBUG_MODEL=resnet50int8
+# export DEBUG_MODEL=resnet50int8
+# export DEBUG_MODEL=resnet50int8_kl
+export DEBUG_MODEL=resnet50fp16_kl
+# export DEBUG_MODEL=resnet50
+#export DEBUG_MODEL=lidar
 
 # fp16/int8
-export DEBUG_PRECISION=int8
+# export DEBUG_PRECISION=int8
+export DEBUG_PRECISION=fp16
 export DEBUG_DATA=example-data
 export USE_Python=OFF
 

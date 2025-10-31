@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Compare two pth files",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/qat/ptq.py",
+        "console": "integratedTerminal",
+        "args": [
+          "--config=bevfusion/configs/nuscenes/det/transfusion/secfpn/camera_lidar/resnet50/convfuser.yaml",
+          "--ckpt=model/resnet50/bevfusion-det.pth",
+          "--calibrate_batch", "300"
+      ]
+      }
+    ]
+  }
+  

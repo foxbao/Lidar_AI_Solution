@@ -274,7 +274,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Export transfusion to onnx file")
     parser.add_argument("--ckpt", type=str, default="qat/ckpt/bevfusion_ptq.pth", help="Pretrain model")
     parser.add_argument('--fp16', action= 'store_true')
-    parser.add_argument('--save', type=str, default=None, help="Optional save path for ONNX export")
     args = parser.parse_args()
     model = torch.load(args.ckpt).module
     
@@ -283,13 +282,7 @@ if __name__ == "__main__":
         suffix = "fp16"
         quantize.disable_quantization(model).apply()
     
-    # save_root = f"qat/onnx_{suffix}"
-    # 如果用户指定了 save，就用 save，否则用默认目录
-    if args.save is not None:
-        save_root = args.save
-    else:
-        save_root = f"qat/onnx_{suffix}"
-        
+    save_root = f"qat/onnx_{suffix}"
     os.makedirs(save_root, exist_ok=True)
 
     model.eval()

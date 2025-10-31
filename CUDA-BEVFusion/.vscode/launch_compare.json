@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Compare two pth files",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/tool/compare_pth_keys.py",
+        "console": "integratedTerminal",
+        "args": [
+          "model/resnet50/bevfusion-det.pth",
+          "model/resnet50fp16_kl/latest.pth"
+        ]
+      }
+    ]
+  }
+  
