@@ -1,17 +1,19 @@
 {
-  "version": "0.2.0",
-  "configurations": [
-      {
-          "name": "Debug export-transfuser.py",
-          "type": "debugpy",
-          "request": "launch",
-          "program": "${workspaceFolder}/qat/export-transfuser_lidar_only.py",
-          "args": [
-              "--ckpt=model/lidar/bevfusion_lidar_only_ptq.pth",
-              "--save=model/lidar"
-          ],
-          "console": "integratedTerminal",
-          "justMyCode": false
-      }
-  ]
-}
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug export-scn.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/qat/export-scn.py",
+            "args": [
+                "--in-channel=4",
+                "--ckpt=model/lidar_only_kl/bevfusion_lidar_only_ptq.pth",
+                "--save=model/lidar_only_kl/lidar.backbone.onnx"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        }
+    ]
+  }
+  

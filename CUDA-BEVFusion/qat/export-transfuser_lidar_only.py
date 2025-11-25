@@ -293,7 +293,7 @@ if __name__ == "__main__":
     os.makedirs(save_root, exist_ok=True)
 
     model.eval()
-    # fuser    = SubclassFuser(model).cuda()
+    fuser    = SubclassFuser(model).cuda()
     headbbox = SubclassHeadBBox(model).cuda()
     replace_layernorm(headbbox)
 
@@ -302,12 +302,12 @@ if __name__ == "__main__":
         # camera_features = torch.randn(1, 80, 180, 180).cuda()
         lidar_features  = torch.randn(1, 256, 180, 180).cuda()
 
-        # fuser_onnx_path = f"{save_root}/fuser.onnx"
-        # torch.onnx.export(fuser, [camera_features, lidar_features], fuser_onnx_path, opset_version=13, 
-        #     input_names=["camera", "lidar"],
-        #     output_names=["middle"],
-        # )
-        # print(f"🚀 The export is completed. ONNX save as {fuser_onnx_path} 🤗, Have a nice day~")
+        fuser_onnx_path = f"{save_root}/fuser.onnx"
+        torch.onnx.export(fuser, [lidar_features], fuser_onnx_path, opset_version=13, 
+            input_names=["lidar"],
+            output_names=["middle"],
+        )
+        print(f"🚀 The export is completed. ONNX save as {fuser_onnx_path} 🤗, Have a nice day~")
 
         boxhead_onnx_path = f"{save_root}/head.bbox.onnx"
         head_input = torch.randn(1, 512, 180, 180).cuda()

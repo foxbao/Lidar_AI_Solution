@@ -9,7 +9,8 @@
         "console": "integratedTerminal",
         "args": [
           "--config=bevfusion/configs/nuscenes/det/transfusion/secfpn/lidar/voxelnet_0p075.yaml",
-          "--ckpt=model/lidar/latest.pth",
+          "--ckpt=model/lidar_only_nus/latest.pth",
+          "--save_path=model/lidar_only_nus/bevfusion_lidar_only_ptq.pth",
           "--calibrate_batch", "300"
       ]
       }

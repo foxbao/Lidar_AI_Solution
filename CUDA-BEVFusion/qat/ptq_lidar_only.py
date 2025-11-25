@@ -89,6 +89,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", metavar="FILE", default="bevfusion/configs/nuscenes/det/transfusion/secfpn/camera+lidar/resnet50/convfuser.yaml", help="config file")
     parser.add_argument("--ckpt", default="model/resnet50/bevfusion-det.pth", help="the checkpoint file to resume from")
+
+    # 新增 save_path 参数，默认沿用原来的
+    parser.add_argument("--save_path",
+                        default="model/lidar_only_nus/bevfusion_lidar_only_ptq.pth",
+                        help="path to save the ptq model")
+    
     parser.add_argument("--calibrate_batch", type=int, default=300, help="calibrate batch")
     args = parser.parse_args()
 
@@ -96,8 +102,8 @@ def main():
     configs.load(args.config, recursive=True)
     cfg = Config(recursive_eval(configs), filename=args.config)
 
-    # save_path = 'qat/ckpt/bevfusion_lidar_only_ptq.pth'
-    save_path = 'model/lidar/bevfusion_lidar_only_ptq.pth'
+    # 使用参数传入的 save_path
+    save_path = args.save_path
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
     # set random seeds

@@ -228,6 +228,11 @@ int main(int argc, char** argv) {
   if (argc > 1) data      = argv[1];
   if (argc > 2) model     = argv[2];
   if (argc > 3) precision = argv[3];
+
+  printf("argc = %d\n", argc);
+  for (int i = 0; i < argc; ++i) {
+      printf("argv[%d] = %s\n", i, argv[i]);
+  }
   dlopen("libcustom_layernorm.so", RTLD_NOW);
 
   auto core = create_core(model, precision);
